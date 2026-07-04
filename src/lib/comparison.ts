@@ -280,7 +280,11 @@ export async function runComparison(
     ebayStats,
     searchedAt: new Date().toISOString(),
     warnings: demoMode
-      ? [...warnings, "Running in demo mode — configure API keys for live data."]
+      ? [
+          ...warnings,
+          "Running in demo mode — configure API keys for live data.",
+          "Demo Facebook links open Marketplace search results, not individual listings.",
+        ]
       : warnings,
   };
 }
