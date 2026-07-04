@@ -1,4 +1,7 @@
 import type { Listing, SearchParams } from "./types";
+import {
+  resolveFacebookListingUrl,
+} from "./facebook-url";
 
 const APIFY_BASE = "https://api.apify.com/v2";
 
@@ -6,7 +9,7 @@ function isConfigured(): boolean {
   return Boolean(process.env.APIFY_TOKEN);
 }
 
-function buildMarketplaceUrl(
+export function buildMarketplaceSearchUrl(
   query: string,
   location?: string,
   maxPrice?: number,
@@ -20,14 +23,17 @@ function buildMarketplaceUrl(
 }
 
 interface ApifyListing {
-  id?: string;
-  listingId?: string;
+  id?: string | number;
+  listingId?: string | number;
   title?: string;
   name?: string;
   price?: number | string;
   priceText?: string;
   url?: string;
   listingUrl?: string;
+  link?: string;
+  itemUrl?: string;
+  facebookUrl?: string;
   imageUrl?: string;
   primaryPhoto?: { image?: { uri?: string } };
   location?: string;
@@ -41,16 +47,24 @@ function parsePrice(value: number | string | undefined): number {
   return Number(digits) || 0;
 }
 
-function normalizeApifyListing(item: ApifyListing): Listing {
-  const id = item.id ?? item.listingId ?? crypto.randomUUID();
+function normalizeApifyListing(
+  item: ApifyListing,
+  fallbackSearchUrl: string,
+): Listing {
+  const id = String(item.listingId ?? item.id ?? crypto.randomUUID());
   const title = item.title ?? item.name ?? "Untitled listing";
-  const url =
-    item.url ??
-    item.listingUrl ??
-    `https://www.facebook.com/marketplace/item/${id}`;
+  const url = resolveFacebookListingUrl({
+    listingUrl: item.listingUrl,
+    link: item.link,
+    itemUrl: item.itemUrl,
+    url: item.url,
+    listingId: item.listingId,
+    id: item.id,
+    fallbackSearchUrl,
+  });
 
   return {
-    id: String(id),
+    id,
     marketplace: "facebook",
     title,
     price: parsePrice(item.price ?? item.priceText),
@@ -107,7 +121,7 @@ export async function searchFacebook(
   const actorId =
     process.env.APIFY_FACEBOOK_ACTOR ?? "dtrungtin~facebook-marketplace-search";
 
-  const searchUrl = buildMarketplaceUrl(
+  const searchUrl = buildMarketplaceSearchUrl(
     params.query,
     params.location,
     params.maxPrice,
@@ -120,65 +134,68 @@ export async function searchFacebook(
     ...(params.minPrice !== undefined && { minPrice: params.minPrice }),
   });
 
-  return items.map(normalizeApifyListing).filter((item) => item.price > 0);
+  return items
+    .map((item) => normalizeApifyListing(item, searchUrl))
+    .filter((item) => item.price > 0);
 }
 
 export function facebookConfigured(): boolean {
   return isConfigured();
 }
 
-export function getDemoFacebookListings(query: string): Listing[] {
+export function getDemoFacebookListings(
+  query: string,
+  location?: string,
+  maxPrice?: number,
+): Listing[] {
   const base = query.toLowerCase();
-  return [
+  const searchUrl = buildMarketplaceSearchUrl(query, location, maxPrice);
+  const demoItems = [
     {
-      id: "fb-demo-1",
-      marketplace: "facebook",
+      id: "1000000000000001",
       title: `${query} - local pickup, great condition`,
       price: 45,
-      currency: "USD",
-      url: "https://www.facebook.com/marketplace/",
       location: "Portland, OR",
       condition: "Used - Good",
     },
     {
-      id: "fb-demo-2",
-      marketplace: "facebook",
+      id: "1000000000000002",
       title: `${query} bundle deal`,
       price: 75,
-      currency: "USD",
-      url: "https://www.facebook.com/marketplace/",
       location: "Beaverton, OR",
       condition: "Used - Like New",
     },
     {
-      id: "fb-demo-3",
-      marketplace: "facebook",
+      id: "1000000000000003",
       title: `Vintage ${base} - must go today`,
       price: 25,
-      currency: "USD",
-      url: "https://www.facebook.com/marketplace/",
       location: "Gresham, OR",
       condition: "Used - Fair",
     },
     {
-      id: "fb-demo-4",
-      marketplace: "facebook",
+      id: "1000000000000004",
       title: `${query} with accessories`,
       price: 120,
-      currency: "USD",
-      url: "https://www.facebook.com/marketplace/",
       location: "Hillsboro, OR",
       condition: "Used - Good",
     },
     {
-      id: "fb-demo-5",
-      marketplace: "facebook",
+      id: "1000000000000005",
       title: `Barely used ${query}`,
       price: 55,
-      currency: "USD",
-      url: "https://www.facebook.com/marketplace/",
       location: "Salem, OR",
       condition: "Used - Like New",
     },
   ];
+
+  return demoItems.map((item) => ({
+    id: item.id,
+    marketplace: "facebook" as const,
+    title: item.title,
+    price: item.price,
+    currency: "USD",
+    url: searchUrl,
+    location: item.location,
+    condition: item.condition,
+  }));
 }

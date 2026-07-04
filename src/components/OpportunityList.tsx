@@ -1,4 +1,5 @@
 import type { FlipOpportunity } from "@/lib/types";
+import { isFacebookListingUrl } from "@/lib/facebook-url";
 
 interface OpportunityListProps {
   opportunities: FlipOpportunity[];
@@ -94,7 +95,9 @@ export function OpportunityList({ opportunities }: OpportunityListProps) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-sm font-medium text-emerald-400 hover:text-emerald-300"
           >
-            View on Facebook Marketplace →
+            {isFacebookListingUrl(opp.listing.url)
+              ? "View listing on Facebook →"
+              : "Browse similar listings on Facebook →"}
           </a>
         </article>
       ))}

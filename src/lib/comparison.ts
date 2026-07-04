@@ -235,14 +235,22 @@ export async function runComparison(
       warnings.push(
         `Facebook search failed: ${error instanceof Error ? error.message : "Unknown error"}. Using demo data.`,
       );
-      facebookListings = getDemoFacebookListings(params.query);
+      facebookListings = getDemoFacebookListings(
+        params.query,
+        params.location,
+        params.maxPrice,
+      );
       demoMode = true;
     }
   } else {
     warnings.push(
       "Facebook search not configured — showing demo Marketplace results. Add APIFY_TOKEN to .env.local for live Facebook data.",
     );
-    facebookListings = getDemoFacebookListings(params.query);
+    facebookListings = getDemoFacebookListings(
+      params.query,
+      params.location,
+      params.maxPrice,
+    );
     demoMode = true;
   }
 
