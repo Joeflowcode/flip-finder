@@ -57,4 +57,12 @@ export interface ApiStatus {
   ebay: boolean;
   facebook: boolean;
   demoMode: boolean;
+  deployTarget: "vercel" | "local";
+  envLocation: string;
+  missing: Array<{
+    key: string;
+    label: string;
+    description: string;
+    signupUrl: string;
+  }>;
 }

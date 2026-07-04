@@ -221,9 +221,6 @@ export async function runComparison(
       demoMode = true;
     }
   } else {
-    warnings.push(
-      "eBay API not configured — showing demo eBay results. Add EBAY_CLIENT_ID and EBAY_CLIENT_SECRET to .env.local.",
-    );
     ebayListings = getDemoEbayListings(params.query);
     demoMode = true;
   }
@@ -243,9 +240,6 @@ export async function runComparison(
       demoMode = true;
     }
   } else {
-    warnings.push(
-      "Facebook search not configured — showing demo Marketplace results. Add APIFY_TOKEN to .env.local for live Facebook data.",
-    );
     facebookListings = getDemoFacebookListings(
       params.query,
       params.location,
@@ -279,12 +273,6 @@ export async function runComparison(
     opportunities,
     ebayStats,
     searchedAt: new Date().toISOString(),
-    warnings: demoMode
-      ? [
-          ...warnings,
-          "Running in demo mode — configure API keys for live data.",
-          "Demo Facebook links open Marketplace search results, not individual listings.",
-        ]
-      : warnings,
+    warnings,
   };
 }

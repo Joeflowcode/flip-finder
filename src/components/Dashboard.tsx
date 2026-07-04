@@ -5,6 +5,7 @@ import type { ApiStatus, ComparisonResult } from "@/lib/types";
 import { SearchForm } from "./SearchForm";
 import { OpportunityList } from "./OpportunityList";
 import { ListingTable } from "./ListingTable";
+import { SetupGuide } from "./SetupGuide";
 
 export function Dashboard() {
   const [results, setResults] = useState<ComparisonResult | null>(null);
@@ -16,7 +17,14 @@ export function Dashboard() {
       .then((res) => res.json())
       .then((data) => setStatus(data as ApiStatus))
       .catch(() =>
-        setStatus({ ebay: false, facebook: false, demoMode: true }),
+        setStatus({
+          ebay: false,
+          facebook: false,
+          demoMode: true,
+          deployTarget: "local",
+          envLocation: ".env.local in the project root",
+          missing: [],
+        }),
       );
   }, []);
 
@@ -53,6 +61,8 @@ export function Dashboard() {
         </div>
       )}
 
+      {status && <SetupGuide status={status} />}
+
       <div className="mb-10">
         <SearchForm onResults={setResults} onLoading={setLoading} />
       </div>
@@ -67,13 +77,13 @@ export function Dashboard() {
       {results && !loading && (
         <div className="space-y-8">
           {results.warnings.length > 0 && (
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
-              <p className="mb-2 text-sm font-medium text-amber-200">
-                Setup notes
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4">
+              <p className="mb-2 text-sm font-medium text-red-200">
+                Search issue
               </p>
               <ul className="space-y-1">
                 {results.warnings.map((warning) => (
-                  <li key={warning} className="text-sm text-amber-100/80">
+                  <li key={warning} className="text-sm text-red-100/80">
                     • {warning}
                   </li>
                 ))}

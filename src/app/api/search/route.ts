@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
-import { ebayConfigured } from "@/lib/ebay";
-import { facebookConfigured } from "@/lib/facebook";
 import { runComparison } from "@/lib/comparison";
+import { getSetupStatus } from "@/lib/setup";
 import type { SearchParams } from "@/lib/types";
 
 export async function GET() {
-  return NextResponse.json({
-    ebay: ebayConfigured(),
-    facebook: facebookConfigured(),
-    demoMode: !ebayConfigured() || !facebookConfigured(),
-  });
+  return NextResponse.json(getSetupStatus());
 }
 
 export async function POST(request: Request) {

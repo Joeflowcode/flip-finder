@@ -94,8 +94,17 @@ flip-finder/
 2. Import this repo (`Joeflowcode/flip-finder`)
 3. Leave **Root Directory** as `./` (default)
 4. Set preset to **Next.js**
-5. Add environment variables (`EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, `APIFY_TOKEN`)
-6. Deploy
+5. Add these **Environment Variables** in Vercel → Settings → Environment Variables:
+
+| Variable | Where to get it |
+|----------|-----------------|
+| `EBAY_CLIENT_ID` | [eBay Developer Keys](https://developer.ebay.com/my/keys) |
+| `EBAY_CLIENT_SECRET` | Same eBay production keyset |
+| `APIFY_TOKEN` | [Apify Integrations](https://console.apify.com/account/integrations) |
+
+6. Tap **Deploy**, then **Redeploy** after adding variables
+
+The app shows a setup guide until all three variables are configured.
 
 Works on Netlify or any Node.js host too.
 
