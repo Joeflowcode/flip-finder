@@ -11,6 +11,7 @@ Search **Facebook Marketplace** for underpriced items, compare prices against **
 ## Quick start
 
 ```bash
+git clone https://github.com/Joeflowcode/flip-finder.git
 cd flip-finder
 npm install
 cp .env.example .env.local
@@ -18,6 +19,12 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). The app runs in **demo mode** without API keys so you can explore the UI immediately.
+
+## Use on iPhone
+
+1. Deploy to [Vercel](https://vercel.com) (import this repo — root directory is `./`, preset **Next.js**)
+2. Open your Vercel URL in **Safari**
+3. Tap **Share → Add to Home Screen** for an app-like shortcut
 
 ## API setup
 
@@ -81,9 +88,16 @@ flip-finder/
 └── .env.example
 ```
 
-## Deploy
+## Deploy to Vercel
 
-Works on Vercel, Netlify, or any Node.js host. Set environment variables in your hosting dashboard.
+1. Create a new project at [vercel.com](https://vercel.com)
+2. Import this repo (`Joeflowcode/flip-finder`)
+3. Leave **Root Directory** as `./` (default)
+4. Set preset to **Next.js**
+5. Add environment variables (`EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, `APIFY_TOKEN`)
+6. Deploy
+
+Works on Netlify or any Node.js host too.
 
 ```bash
 npm run build
