@@ -72,29 +72,75 @@ export function findFlipOpportunities(
   ebayListings: Listing[],
   ebayStats: PriceStats,
   mode: "compare" | "flip" = "compare",
+  useEbay = true,
 ): FlipOpportunity[] {
   const opportunities: FlipOpportunity[] = [];
 
   for (const fbListing of facebookListings) {
-    const similarEbay = ebayListings.filter(
-      (ebay) => titleSimilarity(fbListing.title, ebay.title) >= 0.25,
-    );
+    const useEbayComps = useEbay && ebayListings.length > 0;
+    let marketStats: PriceStats;
+    let marketSource: "ebay" | "facebook";
+    let compPrices: number[];
+    let similarCount: number;
+    const notes: string[] = [];
 
-    const compPrices =
-      similarEbay.length > 0
-        ? similarEbay.map((item) => item.price + (item.shippingCost ?? 0))
-        : ebayListings.map((item) => item.price + (item.shippingCost ?? 0));
+    if (useEbayComps) {
+      const similarEbay = ebayListings.filter(
+        (ebay) => titleSimilarity(fbListing.title, ebay.title) >= 0.25,
+      );
 
-    const marketStats =
-      compPrices.length > 0
-        ? calculatePriceStats(compPrices)
-        : ebayStats;
+      compPrices =
+        similarEbay.length > 0
+          ? similarEbay.map((item) => item.price + (item.shippingCost ?? 0))
+          : ebayListings.map((item) => item.price + (item.shippingCost ?? 0));
+
+      marketStats =
+        compPrices.length > 0
+          ? calculatePriceStats(compPrices)
+          : ebayStats;
+      marketSource = "ebay";
+      similarCount = similarEbay.length;
+
+      if (similarEbay.length === 0) {
+        notes.push("No close eBay title matches; used overall eBay median.");
+      } else {
+        notes.push(`${similarEbay.length} similar eBay listing(s) found.`);
+      }
+    } else {
+      const similarFb = facebookListings.filter(
+        (other) =>
+          other.id !== fbListing.id &&
+          titleSimilarity(fbListing.title, other.title) >= 0.25,
+      );
+
+      compPrices =
+        similarFb.length > 0
+          ? similarFb.map((item) => item.price)
+          : facebookListings
+              .filter((item) => item.id !== fbListing.id)
+              .map((item) => item.price);
+
+      marketStats = calculatePriceStats(compPrices);
+      marketSource = "facebook";
+      similarCount = similarFb.length;
+
+      if (similarFb.length === 0) {
+        notes.push(
+          "Compared against other Facebook listings in this search.",
+        );
+      } else {
+        notes.push(`${similarFb.length} similar Facebook listing(s) found.`);
+      }
+      notes.push(
+        "FB-to-FB flip estimate — add eBay keys for nationwide price comps.",
+      );
+    }
 
     if (marketStats.median <= 0) continue;
 
     const resalePrice = estimateResalePrice(fbListing, marketStats);
-    const ebayFees = resalePrice * EBAY_FEE_RATE;
-    const profitEstimate = resalePrice - fbListing.price - ebayFees;
+    const fees = marketSource === "ebay" ? resalePrice * EBAY_FEE_RATE : 0;
+    const profitEstimate = resalePrice - fbListing.price - fees;
     const marginPercent =
       fbListing.price > 0 ? (profitEstimate / fbListing.price) * 100 : 0;
 
@@ -105,12 +151,6 @@ export function findFlipOpportunities(
       marketStats.median,
     );
 
-    const notes: string[] = [];
-    if (similarEbay.length === 0) {
-      notes.push("No close eBay title matches; used overall market median.");
-    } else {
-      notes.push(`${similarEbay.length} similar eBay listing(s) found.`);
-    }
     if (marginPercent >= 40) {
       notes.push("Strong margin — worth a closer look.");
     }
@@ -124,7 +164,7 @@ export function findFlipOpportunities(
     opportunities.push({
       listing: fbListing,
       marketPrice: marketStats.median,
-      marketSource: "ebay",
+      marketSource,
       profitEstimate: Math.round(profitEstimate * 100) / 100,
       marginPercent: Math.round(marginPercent * 10) / 10,
       flipScore,
@@ -209,20 +249,18 @@ export async function runComparison(
   let facebookListings: Listing[] = [];
   let ebayListings: Listing[] = [];
   let demoMode = false;
+  let useEbay = ebayConfigured();
 
-  if (ebayConfigured()) {
+  if (useEbay) {
     try {
       ebayListings = await searchEbay(params);
     } catch (error) {
       warnings.push(
-        `eBay search failed: ${error instanceof Error ? error.message : "Unknown error"}. Using demo data.`,
+        `eBay search failed: ${error instanceof Error ? error.message : "Unknown error"}. Using Facebook-only price comps.`,
       );
-      ebayListings = getDemoEbayListings(params.query);
-      demoMode = true;
+      useEbay = false;
+      ebayListings = [];
     }
-  } else {
-    ebayListings = getDemoEbayListings(params.query);
-    demoMode = true;
   }
 
   if (facebookConfigured()) {
@@ -264,6 +302,7 @@ export async function runComparison(
     ebayListings,
     ebayStats,
     mode,
+    useEbay,
   );
 
   return {

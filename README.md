@@ -28,28 +28,27 @@ Open [http://localhost:3000](http://localhost:3000). The app runs in **demo mode
 
 ## API setup
 
-### eBay (official API — free tier available)
-
-1. Join the [eBay Developers Program](https://developer.ebay.com)
-2. Create a **Production** keyset (Client ID + Client Secret)
-3. Add to `.env.local`:
-   ```
-   EBAY_CLIENT_ID=...
-   EBAY_CLIENT_SECRET=...
-   ```
-
-The app uses the [Browse API](https://developer.ebay.com/api-docs/buy/browse/overview.html) with OAuth client credentials.
-
-### Facebook Marketplace (via Apify)
+### Facebook Marketplace (required for live data)
 
 Facebook has **no public Marketplace API**. This app uses [Apify's Facebook Marketplace Search actor](https://apify.com/dtrungtin/facebook-marketplace-search) to fetch live listings.
 
 1. Sign up at [Apify](https://apify.com)
 2. Copy your API token from [Integrations](https://console.apify.com/account/integrations)
-3. Add to `.env.local`:
+3. Add to Vercel (or `.env.local`):
    ```
    APIFY_TOKEN=...
    ```
+
+### eBay (optional)
+
+You **do not need** an eBay developer account to use Flip Finder. Without eBay, the app compares Facebook listings against each other to find underpriced local deals for FB-to-FB flipping.
+
+For nationwide eBay price comps, join the free [eBay Developers Program](https://developer.ebay.com) and add:
+
+```
+EBAY_CLIENT_ID=...
+EBAY_CLIENT_SECRET=...
+```
 
 > **Note:** Scraping Facebook may violate their Terms of Service. Use responsibly and be aware of account/IP risks. Apify handles proxies and browser automation on their platform.
 

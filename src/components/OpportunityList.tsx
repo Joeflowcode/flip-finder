@@ -60,7 +60,9 @@ export function OpportunityList({ opportunities }: OpportunityListProps) {
               </p>
             </div>
             <div className="rounded-xl bg-black/20 p-3">
-              <p className="text-xs text-zinc-500">eBay median</p>
+              <p className="text-xs text-zinc-500">
+                {opp.marketSource === "ebay" ? "eBay median" : "FB median"}
+              </p>
               <p className="text-lg font-bold text-blue-300">
                 {formatCurrency(opp.marketPrice)}
               </p>

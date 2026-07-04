@@ -56,6 +56,7 @@ export interface PriceStats {
 export interface ApiStatus {
   ebay: boolean;
   facebook: boolean;
+  ebayOptional: boolean;
   demoMode: boolean;
   deployTarget: "vercel" | "local";
   envLocation: string;
@@ -64,5 +65,6 @@ export interface ApiStatus {
     label: string;
     description: string;
     signupUrl: string;
+    required: boolean;
   }>;
 }

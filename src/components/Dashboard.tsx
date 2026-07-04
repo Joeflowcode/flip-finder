@@ -20,6 +20,7 @@ export function Dashboard() {
         setStatus({
           ebay: false,
           facebook: false,
+          ebayOptional: true,
           demoMode: true,
           deployTarget: "local",
           envLocation: ".env.local in the project root",
@@ -50,7 +51,7 @@ export function Dashboard() {
             label="eBay API"
             active={status.ebay}
             activeText="Connected"
-            inactiveText="Demo mode"
+            inactiveText="Optional — not connected"
           />
           <StatusBadge
             label="Facebook"
@@ -105,10 +106,14 @@ export function Dashboard() {
               accent="facebook"
             />
             <ListingTable
-              title="eBay (Buy It Now)"
+              title={
+                results.ebayListings.length > 0
+                  ? "eBay (Buy It Now)"
+                  : "eBay (optional — not connected)"
+              }
               listings={results.ebayListings}
               accent="ebay"
-              stats={results.ebayStats}
+              stats={results.ebayStats.count > 0 ? results.ebayStats : undefined}
             />
           </div>
         </div>

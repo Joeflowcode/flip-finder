@@ -5,59 +5,56 @@ interface SetupGuideProps {
 }
 
 export function SetupGuide({ status }: SetupGuideProps) {
-  if (!status.demoMode) return null;
-
-  const ebayMissing = !status.ebay;
-  const facebookMissing = !status.facebook;
+  if (!status.demoMode) {
+    if (status.ebayOptional) {
+      return (
+        <section className="mb-8 rounded-2xl border border-zinc-700/50 bg-zinc-900/50 p-5">
+          <h2 className="text-sm font-medium text-zinc-300">
+            eBay comparison is optional
+          </h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Flip scores use Facebook Marketplace comps. Add{" "}
+            <code className="text-zinc-400">EBAY_CLIENT_ID</code> and{" "}
+            <code className="text-zinc-400">EBAY_CLIENT_SECRET</code> in{" "}
+            {status.envLocation} anytime for nationwide eBay price data.
+          </p>
+        </section>
+      );
+    }
+    return null;
+  }
 
   return (
     <section className="mb-8 rounded-2xl border border-amber-500/25 bg-amber-500/10 p-5">
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-amber-100">
-          Connect live data to remove demo mode
+          One key needed for live Facebook listings
         </h2>
         <p className="mt-1 text-sm text-amber-100/75">
-          Results are sample data until these keys are added in{" "}
-          <span className="font-medium text-amber-50">{status.envLocation}</span>
-          , then redeployed.
+          Add <strong className="text-amber-50">APIFY_TOKEN</strong> in{" "}
+          {status.envLocation}, then redeploy. You do{" "}
+          <strong className="text-amber-50">not</strong> need an eBay developer
+          account to start flipping.
         </p>
       </div>
 
-      <div className="space-y-4">
-        {ebayMissing && (
-          <SetupBlock
-            title="eBay prices"
-            steps={[
-              "Create a free account at developer.ebay.com",
-              "Create a Production keyset (Client ID + Client Secret)",
-              `Add EBAY_CLIENT_ID and EBAY_CLIENT_SECRET in ${status.envLocation}`,
-            ]}
-            linkHref="https://developer.ebay.com/my/keys"
-            linkLabel="Open eBay Developer Keys"
-          />
-        )}
+      <SetupBlock
+        title="Facebook Marketplace (required)"
+        steps={[
+          "Create a free Apify account",
+          "Copy your API token from Apify Integrations",
+          `Add APIFY_TOKEN in ${status.envLocation}`,
+          "Redeploy on Vercel",
+        ]}
+        linkHref="https://console.apify.com/account/integrations"
+        linkLabel="Open Apify Token Page"
+      />
 
-        {facebookMissing && (
-          <SetupBlock
-            title="Facebook Marketplace listings"
-            steps={[
-              "Create a free Apify account",
-              "Copy your API token from Apify Integrations",
-              `Add APIFY_TOKEN in ${status.envLocation}`,
-            ]}
-            linkHref="https://console.apify.com/account/integrations"
-            linkLabel="Open Apify Token Page"
-          />
-        )}
-      </div>
-
-      {status.deployTarget === "vercel" && (
-        <p className="mt-4 rounded-xl bg-black/20 px-4 py-3 text-sm text-amber-100/80">
-          After saving variables in Vercel, open{" "}
-          <strong className="text-amber-50">Deployments → Redeploy</strong> so
-          the app picks them up.
-        </p>
-      )}
+      <p className="mt-4 rounded-xl bg-black/20 px-4 py-3 text-sm text-amber-100/80">
+        <strong className="text-amber-50">No eBay account?</strong> That&apos;s
+        fine. The app compares Facebook listings against each other to spot
+        underpriced local deals you can re-list on Facebook.
+      </p>
     </section>
   );
 }
